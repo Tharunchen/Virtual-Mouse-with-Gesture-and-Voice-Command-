@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI ChatBot</title>
+  <script type="text/javascript" src="/eel.js"></script>
+  <style>
+
+     #loader {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: linear-gradient(135deg, #4a90e2 -0.5% , white );
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      font-family: Arial, sans-serif;
+      color: black;
+      z-index: 9999;
+      overflow: hidden;
+    }
+
+    /* Animated Background */
+    @keyframes gradientBackground {
+      0% { background-color: #4a90e2; }
+      50% { background-color: #50e3c2; }
+      100% { background-color: #4a90e2; }
+    }
+
+  
+
+    /* Spinner styling */
+    .spinner {
+      width: 80px;
+      height: 80px;
+      border: 8px solid rgba(255, 255, 255, 0.3);
+      border-top-color: black;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    #loader-text {
+      font-size: 20px;
+      letter-spacing: 1px;
+      position: relative;
+      overflow: hidden;
+      white-space: nowrap;
+      animation: typing 3s steps(30, end) infinite, blink-caret 0.75s step-end infinite;
+    }
+
+    /* Typing effect */
+    @keyframes typing {
+      from { width: 0; }
+      to { width: 100%; }
+    }
+
+    /* Caret blinking effect */
+    @keyframes blink-caret {
+      50% { border-right-color: transparent; }
+    }
+
+
+
+
+    body{font-family:Arial,sans-serif;background:#f4f7fc;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;}
+    .chat-container{width:450px;height:600px;background:white;border-radius:15px;box-shadow:0 4px 12px rgba(0,0,0,0.15);display:flex;flex-direction:column;overflow:hidden;}
+    .chat-header{background:#4a90e2;color:white;padding:15px;text-align:center;font-size:18px;display:flex;flex-direction:column;gap:8px;}
+    .chat-box{flex:1;padding:10px;overflow-y:auto;}
+    .message{margin:8px 0;padding:10px;border-radius:12px;max-width:75%;word-wrap:break-word;}
+    .user-msg{background:#dcf8c6;align-self:flex-end;}
+    .bot-msg{background:#f1f0f0;align-self:flex-start;}
+    .chat-input{display:flex;padding:10px;border-top:1px solid #ddd;}
+    .chat-input input{flex:1;padding:10px;border-radius:20px;border:1px solid #ccc;outline:none;}
+    .chat-input button{background:#4a90e2;color:white;border:none;border-radius:50%;width:40px;height:40px;margin-left:8px;cursor:pointer;font-size:18px;}
+    .chat-input button:hover{background:#357ab7;}
+    select{padding:5px;border-radius:8px;border:1px solid #ccc;   }
+     #langSelect {
+    max-height: 100px; 
+    overflow: auto; 
+  }
+  </style>
+</head>
+<body>
+   <div id="loader">
+    <div class="spinner"></div>
+    <div id="loader-text">Loading your AI ChatBot...</div>
+  </div>
+
+ 
+
+<!--to open console ctrl+shift+I-->
+<div id="content" style="display:none;"></div>
+  <div class="chat-container">
+    <div class="chat-header">
+      🤖 Voice Bot
+      <div>
+        <label>Language:</label>
+        <select id="langSelect" size="1">
+          <option value="en">English</option>
+          <option value="hi">Hindi</option>
+          <option value="bn">Bengali</option>
+          <option value="ta">Tamil</option>
+          <option value="te">Telugu</option>
+          <option value="ml">Malayalam</option>
+          <option value="kn">Kannada</option>
+          <option value="mr">Marathi</option>
+          <option value="gu">Gujarati</option>
+          <option value="pa">Punjabi</option>
+          <option value="or">Odia</option>
+          <option value="as">Assamese</option>
+          <option value="sd">Sindhi</option>
+          <option value="ur">Urdu</option>
+          <option value="ta">Tamil</option>
+          <option value="ja">Japanese</option>
+          <option value="ko">Korean</option>
+          <option value="zh-CN">Chinese (Simplified)</option>
+          <option value="zh-TW">Chinese (Traditional)</option>
+          <option value="de">German</option>
+          <option value="fr">French</option>
+          <option value="es">Spanish</option>
+          <option value="it">Italian</option>
+          <option value="ru">Russian</option>
+          <option value="ar">Arabic</option>
+          <option value="pt">Portuguese</option>
+          <option value="nl">Dutch</option>
+          <option value="sv">Swedish</option>
+          <option value="fi">Finnish</option>
+          <option value="tr">Turkish</option>
+          <!-- Add more later -->
+        </select>
+        
+      </div>
+    </div>
+
+    <div class="chat-box" id="chat-box"></div>
+    <div class="chat-input">
+      <input type="text" id="userInput" placeholder="Type a message..." />
+      <button onclick="sendMessage()">➤</button>
+      <button onclick="startListening()">🎤</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let recognition;
+
+if("webkitSpeechRecognition" in window){
+  recognition=new webkitSpeechRecognition();
+  recognition.continuous=true;
+  recognition.interimResults=false;
+  recognition.lang="en-US";
+  recognition.onresult=function(e){
+    let transcript=e.results[0][0].transcript;
+    addMessage("You",transcript,"user-msg");
+    eel.getUserInput(transcript);
+  };
+}
+
+function startListening(){ if(recognition) recognition.start(); }
+function stopListening(){ if(recognition) recognition.stop(); }
+
+function sendMessage(){
+  let input=document.getElementById("userInput");
+  let msg=input.value.trim();
+  if(!msg) return;
+  addMessage("You",msg,"user-msg");
+  eel.getUserInput(msg);
+  input.value="";
+}
+
+function addMessage(sender,text,cls){
+  let box=document.getElementById("chat-box");
+  let div=document.createElement("div");
+  div.classList.add("message",cls);
+  div.innerText=(sender==="Bot"?"🤖 ":"🧑 ")+text;
+  box.appendChild(div);
+  box.scrollTop=box.scrollHeight;
+}
+
+// Bot speech synthesis
+function speakMessage(text, lang) {
+  function actuallySpeak() {
+    const voices = speechSynthesis.getVoices();
+    if (!voices.length) return;
+
+    let selectedVoice = voices.find(v => v.lang.startsWith(lang.substring(0, 2))) || voices[0];
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.voice = selectedVoice;
+    utterance.lang = selectedVoice.lang;
+
+    stopListening();
+
+    utterance.onend = () => {
+      startListening();
+    };
+
+    speechSynthesis.speak(utterance);
+  }
+
+  if (speechSynthesis.getVoices().length === 0) {
+    speechSynthesis.onvoiceschanged = () => {
+      actuallySpeak();
+      speechSynthesis.onvoiceschanged = null;
+    };
+  } else {
+    actuallySpeak();
+  }
+}
+
+
+
+
+// Expose functions for Python
+eel.expose(addMsgToChat);
+function addMsgToChat(msg){ addMessage("Bot",msg,"bot-msg"); }
+
+eel.expose(speak);
+function speak(msg,lang,gender){ speakMessage(msg,lang); }
+
+eel.expose(close_window);
+function close_window(){ window.close(); }
+
+// Exposed so Python can call these
+eel.expose(startListening);
+eel.expose(stopListening);
+
+// Handle language + gender change
+document.getElementById("langSelect").addEventListener("change",function(){
+  eel.setLanguage(this.value);
+});
+
+document.getElementById("userInput").addEventListener("keypress",function(e){
+  if(e.key==="Enter") sendMessage();
+});
+
+
+window.onload = () => {
+  startListening();
+};
+
+
+  window.addEventListener("load", function() {
+      setTimeout(function() {
+        const loader = document.getElementById("loader");
+        loader.style.opacity = '0';
+        setTimeout(() => {
+          loader.style.display = 'none';
+        }, 1000); 
+      }, 1200); 
+    });
+
+
+
+</script>
+</body>
+</html>
