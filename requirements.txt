@@ -37,7 +37,7 @@ gevent-websocket==0.10.1
 google-auth==2.40.3
 google-auth-oauthlib==0.4.6
 google-pasta==0.2.0
-googletrans==4.0.0rc1
+googletrans==4.0.0-rc1
 greenlet==3.2.4
 grpcio==1.74.0
 gTTS==2.5.4
@@ -48,7 +48,7 @@ h5py==3.14.0
 hpack==3.0.0
 hstspreload==2025.1.1
 httpcore==0.9.1
-httpx==0.13.3
+httpx==0.27.0
 hyperframe==5.2.0
 idna==2.10
 importlib_resources==6.5.2
@@ -80,4 +80,5 @@ PyMsgBox==1.0.9
 pycaw==20240210
 requests==2.32.5
 screen_brightness_control==0.24.2
+
 
